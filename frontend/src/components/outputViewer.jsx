@@ -4,17 +4,17 @@ function OutputViewer({ data }) {
         <div className="mt-6 space-y-4">
       <div>
         <h2 className="text-xl font-semibold mb-1">🎯 Tailored Resume</h2>
-        <pre className="bg-gray-100 p-3 rounded">{data.tailoredResume}</pre>
+        <pre className="bg-gray-100 p-3 rounded whitespace-pre-wrap break-words">{data.tailoredResume}</pre>
       </div>
 
       <div>
         <h2 className="text-xl font-semibold mb-1">📝 Cover Letter</h2>
-        <pre className="bg-gray-100 p-3 rounded">{data.coverLetter}</pre>
+        <pre className="bg-gray-100 p-3 rounded  whitespace-pre-wrap break-words">{data.coverLetter}</pre>
       </div>
 
       <div>
         <h2 className="text-xl font-semibold mb-1">✅ Fit Summary</h2>
-        <pre className="bg-gray-100 p-3 rounded">{data.fitSummary}</pre>
+        <pre className="bg-gray-100 p-3 rounded  whitespace-pre-wrap break-words">{data.fitSummary}</pre>
       </div>
     </div>
     );

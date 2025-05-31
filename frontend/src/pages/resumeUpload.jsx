@@ -2,17 +2,30 @@ import React, {useState} from "react";
 import { dummyResponse } from "../dummyData";
 import OutputViewer from "../components/outputViewer";
 import FileUpload from "../components/fileUpload";
+import axios from "axios"
 
 function ResumeUpload(){
     const [resumeText, setResumeText] = useState("");
     const [jobDesc, setJobDesc] = useState("");
     const [result, setResult] = useState(null);    
 
-    const handleGenerate = () =>{
-        setTimeout(() =>{
-            setResult(dummyResponse);
-        },1000)
+    const handleGenerate = async () => {
+      try{
+        const response = await axios.post("http://localhost:8000/generate",{
+          resume:resumeText,
+          job_description: jobDesc
+        });
+
+        setResult(response.data);
+      }
+      catch (error){
+        console.log("Error generating output:".error)
+
+      }
     };
+    console.log(resumeText)
+    console.log(jobDesc)
+
 
     return(
         <div className="p-6 max-w-3xl mx-auto">
