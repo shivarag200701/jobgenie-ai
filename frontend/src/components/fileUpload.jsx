@@ -1,20 +1,48 @@
 import React from "react";
+import PDFToText from "react-pdftotext";
+import mammoth from "mammoth";
 
 function FileUpload({ onTextExtracted }) {
-  const handleFileChange = (e) => {
+  // Triggered on file selection
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
+    const fileType = file.name.split('.').pop().toLowerCase();
 
-    reader.onload = (event) => {
-      const fakeExtractedText = `• Experience with Python and FastAPI
-• Built AI tools using OpenAI API
-• Skilled in system design and resume parsing`;
-      onTextExtracted(fakeExtractedText); // simulate parsed text
-    };
+    if (fileType === "pdf") {
+      try {
+        const text = await parsePDF(file);
+        onTextExtracted(text);
+      } catch (err) {
+        console.error("PDF parsing failed:", err);
+        alert("Failed to parse PDF file.");
+      }
+    } else if (fileType === "docx") {
+      try {
+        const text = await parseDocx(file);
+        onTextExtracted(text);
+      } catch (err) {
+        console.error("DOCX parsing failed:", err);
+        alert("Failed to parse Word file.");
+      }
+    } else {
+      alert("Unsupported file type. Please upload a PDF or DOCX.");
+    }
+  };
 
-    reader.readAsArrayBuffer(file); // Just to simulate a read action
+  // 🧾 PDF Parsing using react-pdftotext
+  const parsePDF = async (file) => {
+    const text = await PDFToText(file);
+    console.log(text, "hi")
+    return text;
+  };
+
+  // 📄 DOCX Parsing using mammoth
+  const parseDocx = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
   };
 
   return (

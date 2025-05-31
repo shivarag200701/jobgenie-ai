@@ -23,8 +23,7 @@ function ResumeUpload(){
 
       }
     };
-    console.log(resumeText)
-    console.log(jobDesc)
+    
 
 
     return(

@@ -1,3 +1,4 @@
+import ast
 import json
 import os
 
@@ -25,13 +26,14 @@ Job Description:
 
 ---
 
-Return a JSON object with the following structure (no explanation, only JSON):
+Only respond with a **valid JSON object** like this:
 
 {{
   "tailoredResume": "...",
   "coverLetter": "...",
   "fitSummary": "..."
 }}
+⚠️ Do not include any extra text, explanations, or markdown. Output only raw JSON, nothing else.
 """
 
     # Call the OpenAI Chat API
@@ -46,15 +48,18 @@ Return a JSON object with the following structure (no explanation, only JSON):
 
     # Extract and parse the JSON result
     content = response.choices[0].message.content
-
     try:
         result = json.loads(content)
         return result
     except json.JSONDecodeError:
-        # fallback: return raw string if not parseable
-        return {
-            "tailoredResume": "",
-            "coverLetter": "",
-            "fitSummary": "Could not parse model output. Here's the raw content:",
-            "raw": content,
-        }
+        try:
+            # Try safer literal evaluation
+            result = ast.literal_eval(content)
+            return result
+        except Exception:
+            return {
+                "tailoredResume": "",
+                "coverLetter": "",
+                "fitSummary": "Could not parse model output. Here's the raw content:",
+                "raw": content,
+            }
