@@ -1,6 +1,6 @@
 import os
 
-from ai_engine import generate_outputs
+from ai_engine import classify_role_with_llm, generate_outputs
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,8 +30,20 @@ class GenRequest(BaseModel):
     job_description: str
 
 
+# Request schema to validate and parse JSON in python objects using pydantic
+class ClassifyRequest(BaseModel):
+    job_description: str
+
+
 # POST endpoint for AI generation
 @app.post("/generate")
 async def generate(data: GenRequest):
     result = generate_outputs(data.resume, data.job_description)
+    return result
+
+
+# POST endpoint for job role classification
+@app.post("/classify-role")
+async def classify(data: ClassifyRequest):
+    result = classify_role_with_llm(data.job_description)
     return result

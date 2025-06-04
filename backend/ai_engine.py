@@ -63,3 +63,34 @@ Only respond with a **valid JSON object** like this:
                 "fitSummary": "Could not parse model output. Here's the raw content:",
                 "raw": content,
             }
+
+
+def classify_role_with_llm(job_description: str):
+    system_prompt = """
+    You are a job role classification expert. Based on the given resume text, classify the user's most relevant tech job title from this list:
+    - Backend Developer
+    - Frontend Developer
+    - Full Stack Developer
+    - DevOps Engineer
+    - Data Scientist
+    - Machine Learning Engineer
+    - MLOps Engineer
+    - Software Engineer
+    - AI Research Engineer
+    - Cloud Engineer
+    - Cybersecurity Analyst
+    - QA Engineer
+    - Embedded Systems Engineer
+    - Product Engineer
+    Return only the most likely job title.
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": job_description},
+        ],
+        temperature=0.2,
+    )
+    return response.choices[0].message.content.strip()

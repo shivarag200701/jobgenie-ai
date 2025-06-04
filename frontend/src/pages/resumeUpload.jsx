@@ -7,7 +7,8 @@ import axios from "axios"
 function ResumeUpload(){
     const [resumeText, setResumeText] = useState("");
     const [jobDesc, setJobDesc] = useState("");
-    const [result, setResult] = useState(null);    
+    const [result, setResult] = useState(null);   
+    const [role, setRole] = useState(null);
 
     const handleGenerate = async () => {
       try{
@@ -23,8 +24,18 @@ function ResumeUpload(){
 
       }
     };
-    
 
+    const handleClassify = async () => {
+      try{
+        const response = await axios.post("http://localhost:8000/classify-role",{ 
+          job_description: jobDesc
+        });
+        setRole(response.data);
+      }
+      catch (error){
+        console.log("Error classifying role:", error);
+      }
+    };
 
     return(
         <div className="p-6 max-w-3xl mx-auto">
@@ -50,11 +61,12 @@ function ResumeUpload(){
       />
 
       <button
-        onClick={handleGenerate}
+        onClick={handleGenerate && handleClassify}
         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
       >
         Generate
       </button>
+      {role && <p>Role: {role}</p>}
 
       {result && <OutputViewer data={result} />}
     </div>
