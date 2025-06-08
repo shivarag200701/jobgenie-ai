@@ -37,6 +37,19 @@ function ResumeUpload(){
       }
     };
 
+     
+    const handleExtractRequirements = async () => {
+      try{
+        const response = await axios.post("http://localhost:8000/classify-role",{ 
+          job_description: jobDesc
+        });
+        setRole(response.data);
+      }
+      catch (error){
+        console.log("Error classifying role:", error);
+      }
+    };
+
     return(
         <div className="p-6 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">JobGenie</h1>

@@ -1,6 +1,7 @@
 import ast
 import json
 import os
+import re
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -14,6 +15,7 @@ print("OpenAI Key Loaded:", api_key[:8] + "..." if api_key else "None")
 client = OpenAI(api_key=api_key)
 
 
+# Function to generate result only based on LLM and no AI agents
 def generate_outputs(resume: str, job_description: str):
     prompt = f"""
 You are a helpful assistant that tailors a resume and cover letter based on a given resume and job description.
@@ -65,9 +67,10 @@ Only respond with a **valid JSON object** like this:
             }
 
 
+# Function to classify roles for Step 1 of AI-agents
 def classify_role_with_llm(job_description: str):
     system_prompt = """
-    You are a job role classification expert. Based on the given resume text, classify the user's most relevant tech job title from this list:
+    You are a job role classification expert. Based on the given job description text, classify the user's most relevant tech job title from this list:
     - Backend Developer
     - Frontend Developer
     - Full Stack Developer
@@ -94,3 +97,48 @@ def classify_role_with_llm(job_description: str):
         temperature=0.2,
     )
     return response.choices[0].message.content.strip()
+
+
+# Function to find "Required skills" , "responsiblities" and "nice to have"
+
+
+def extract_skills(job_description: str):
+    print("📄 JD Input:", job_description)
+
+    system_prompt = """
+You are an AI that extracts job requirements.
+Return a valid JSON like:
+{
+  "required_skills": ["skill1", "skill2"],
+  "responsibilities": ["task1", "task2"],
+  "nice_to_have": ["bonus1", "bonus2"]
+}
+Do not include any explanation or extra text.
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": job_description},
+        ],
+        temperature=0.4,
+    )
+
+    content = response.choices[0].message.content
+    print("🧠 Raw content:", content)
+
+    # Strip markdown code block formatting if present
+    content = re.sub(
+        r"^```(?:json)?\s*|\s*```$", "", content.strip(), flags=re.MULTILINE
+    )
+
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        return {
+            "required_skills": [],
+            "responsibilities": [],
+            "nice_to_have": [],
+            "raw": content,
+        }

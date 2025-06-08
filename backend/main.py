@@ -1,6 +1,6 @@
 import os
 
-from ai_engine import classify_role_with_llm, generate_outputs
+from ai_engine import classify_role_with_llm, extract_skills, generate_outputs
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,14 +24,19 @@ app.add_middleware(
 )
 
 
-# Request schema to validate and parse JSON in python objects using pydantic
+# Request schema to validate and parse JSON in python objects using pydantic for reponse based only on prompt
 class GenRequest(BaseModel):
     resume: str
     job_description: str
 
 
-# Request schema to validate and parse JSON in python objects using pydantic
+# Request schema to validate and parse JSON in python objects using pydantic for classify job role
 class ClassifyRequest(BaseModel):
+    job_description: str
+
+
+# Request schema to validate and parse JSON in python objects using pydantic for extract key requirements
+class KeyRequirements(BaseModel):
     job_description: str
 
 
@@ -46,4 +51,12 @@ async def generate(data: GenRequest):
 @app.post("/classify-role")
 async def classify(data: ClassifyRequest):
     result = classify_role_with_llm(data.job_description)
+    return result
+
+
+# POST endpoint to extract key requirements
+@app.post("/key_requirements")
+async def requirements(data: KeyRequirements):
+    print(data.job_description)
+    result = extract_skills(data.job_description)
     return result
