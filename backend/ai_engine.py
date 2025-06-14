@@ -2,9 +2,12 @@ import ast
 import json
 import os
 import re
+import uuid
 
+import chromadb
 from dotenv import load_dotenv
 from openai import OpenAI
+from utlis.text_splitter import split_text
 
 # Load environment variables
 load_dotenv()
@@ -13,6 +16,10 @@ print("OpenAI Key Loaded:", api_key[:8] + "..." if api_key else "None")
 
 # Initialize OpenAI client
 client = OpenAI(api_key=api_key)
+
+# init Chroma Client
+chroma_client = chromadb.Client()
+collection = chroma_client.get_or_create_collection("resume_chunks")
 
 
 # Function to generate result only based on LLM and no AI agents
@@ -67,6 +74,14 @@ Only respond with a **valid JSON object** like this:
             }
 
 
+##Agentic workflow
+""" step1 - Classify the job role
+    step2 - Extract Key Requirements
+    step3 - Retrieve matching Resume Segments (RAG)
+    step4 - Tailor resume based on matching resume segments for more accuracy
+"""
+
+
 # Function to classify roles for Step 1 of AI-agents
 def classify_role_with_llm(job_description: str):
     system_prompt = """
@@ -99,9 +114,7 @@ def classify_role_with_llm(job_description: str):
     return response.choices[0].message.content.strip()
 
 
-# Function to find "Required skills" , "responsiblities" and "nice to have"
-
-
+# Function to find "Required skills" , "responsiblities" and "nice to have" Step 2
 def extract_skills(job_description: str):
     print("📄 JD Input:", job_description)
 
@@ -142,3 +155,44 @@ Do not include any explanation or extra text.
             "nice_to_have": [],
             "raw": content,
         }
+
+
+# Step 3 - Retrieve matching Resume Segments (RAG)
+
+
+# embed using openai embedding
+def embed_text(text: str):
+    reponse = client.embeddings.create(input=[text], model="text-embedding-ada-002")
+    return reponse.data[0].embedding
+
+
+# Store resume chunks in Chroma
+def store_resume_chunks(resume_text: str):
+    # Create a temporary collection (in-memory)
+    temp_collection = chroma_client.create_collection(name=f"resume_{uuid.uuid4()}")
+
+    chunks = split_text(resume_text)
+    embeddings = [embed_text(chunk) for chunk in chunks]
+    ids = [f"chunk_{i}" for i in range(len(chunks))]
+
+    temp_collection.add(ids=ids, embeddings=embeddings, documents=chunks)
+    print(chunks)
+
+    return (
+        temp_collection,
+        chunks,
+    )  # ⬅️ return collection for reuse= [f"chunk_{i}" for i in range(len(chunks))]
+    collection.add(ids=ids, embeddings=embeddings, documents=chunks)
+    print(chunks)
+    return chunks
+
+
+# Retrieve matching resume segments
+def retrieve_relevant_chunks(job_description: str, collection, top_k: int = 5):
+    query_embedding = embed_text(job_description)
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=top_k,
+    )
+    print(results["documents"][0])
+    return results["documents"][0]  # return the top k chunks

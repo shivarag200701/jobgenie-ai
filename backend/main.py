@@ -1,6 +1,12 @@
 import os
 
-from ai_engine import classify_role_with_llm, extract_skills, generate_outputs
+from ai_engine import (
+    classify_role_with_llm,
+    extract_skills,
+    generate_outputs,
+    retrieve_relevant_chunks,
+    store_resume_chunks,
+)
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,6 +46,12 @@ class KeyRequirements(BaseModel):
     job_description: str
 
 
+# Request schema to validate and parse JSON in python objects using pydantic for extract relevant resume chunks
+class ChunkRequest(BaseModel):
+    job_description: str
+    resume: str
+
+
 # POST endpoint for AI generation
 @app.post("/generate")
 async def generate(data: GenRequest):
@@ -60,3 +72,11 @@ async def requirements(data: KeyRequirements):
     print(data.job_description)
     result = extract_skills(data.job_description)
     return result
+
+
+# POST endpoint to retrive relevant resume chunks
+@app.post("/retrive_chunks")
+async def get_matching_chunks(data: ChunkRequest):
+    collection, _ = store_resume_chunks(data.resume)
+    top_chunks = retrieve_relevant_chunks(data.job_description, collection)
+    return {"top_chunks": top_chunks}

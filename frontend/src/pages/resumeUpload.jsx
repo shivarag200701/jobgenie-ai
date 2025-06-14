@@ -74,7 +74,10 @@ function ResumeUpload(){
       />
 
       <button
-        onClick={handleGenerate && handleClassify}
+        onClick={() =>{
+          handleGenerate();
+          handleClassify();
+        }}
         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
       >
         Generate
