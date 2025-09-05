@@ -1,6 +1,6 @@
 # 🧠 JobGenie – AI-Powered Resume & Cover Letter Generator (Frontend)
 
-JobGenie is a smart assistant that helps job seekers instantly generate personalized resumes and cover letters by leveraging AI. Built using React and Tailwind CSS, the app allows users to upload their resume, paste a job description, and get tailored outputs – all in a clean, minimal UI.
+JobGenie is a smart assistant that helps job seekers instantly generate personalized resumes and cover letters by leveraging AI. Built using React and Tailwind CSS, the app allows users to upload their resume, paste a job description, and get tailored outputs – all in a clean, minimal UI. And very light weight.
 
 > 🚧 This is the MVP frontend (React) of the project. Backend (FastAPI + OpenAI) coming soon.
 
